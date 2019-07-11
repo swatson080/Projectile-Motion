@@ -3,8 +3,9 @@ Code to solve simple freefall problems.
 
 Initial commit 7/1/2019
 
-  - Calculates time when object thrown straight up reaches its maximum height
-  - Calculates the maximum height (in meters/second only for now) that the object reaches
+  - Calculates the maximum height (in meters/second or feet/second) that the object reaches
+  - Calculates distance flown
+  - Calculates total flight time
   
  Update 7/5/2019
   - User can now select which units they would like to use (metric,imperial)
@@ -14,4 +15,3 @@ Initial commit 7/1/2019
   
 Eventually, I'd like to add more functionality to this, including:
   - Change the gravitational constant
-  - Additional kinds of kinematics calculations
