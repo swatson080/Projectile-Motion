@@ -1,7 +1,8 @@
 // Calculator for free fall motion problems (one dimensional)
 // Input the initial velocity and the program will output:
 // 	- Max. height
-// 	- Time when max height is reached
+// 	- Distance flown
+// 	- Flight time 
 //
 // Assumptions made:
 // 	- No air resistance
@@ -9,11 +10,8 @@
 //
 //
 // TODO:
-// 	- Allow other types of kinematics calculations
-// 	- Ask user for degrees or radians for launch angle
-// 	- Get launch angle from user
-// 	- Convert angle to radians (if user indicates degrees)
-// 	- Calculate vectory components
+// 	- Support unit conversion..
+// 	
 // 	
 
 #include <iostream>
@@ -24,22 +22,27 @@
 
 // Gravitational constant (metric)
 const double GRAVITY_METRIC = -9.80665;
-
 // Gravitation constant (imperial)
 const double GRAVITY_IMPERIAL = -32.174;
 
+// Calculations/Initial conditions 
+double setLaunchAngle();
 double maxHeight(double t, double v0, double g); 
 double setInitialVelocity(double g);
 double calculateTime(double v0,double g);
-void printResults(double t,double p, double g);
+double calculateVX(double v0, double angle);
+double calculateVY(double v0, double angle);
+double calculateDisplacement(double vX, double t);
+// User preference functions
 bool runAgain();
 bool useMetric();
 bool useRadians();
+// Utility functions
+double convertToRads(double angle);
 void clearInputStream();
+void printResults(double t, double height, double displacement, double g);
 
 int main() {
-
-	std::cout << M_PI << std::endl;
 
 	while(true) {
 
@@ -49,17 +52,25 @@ int main() {
 			g = GRAVITY_METRIC;
 		}
 
+		// Launch angle
+		double angle = setLaunchAngle();
+
 		// Initial velocity
 		double v0 = setInitialVelocity(g);
-
-		// Calculate time when object's velocity = 0
-		double t = calculateTime(v0,g);
+		double vX = calculateVX(v0,angle);
+		double vY = calculateVY(v0,angle);
+		
+		// Calculate total flight time 
+		double t = calculateTime(vY,g);
 
 		// Calculate object's maximum height
-		double p = maxHeight(t,v0,g);
+		double height = maxHeight(0.5 * t,vY,g);
+
+		// Calculate object's horizontal flight distance 
+		double displacement = calculateDisplacement(vX,t);
 
 		// Output the results
-		printResults(t,p,g);
+		printResults(t,height,displacement,g);
 
 		if(runAgain()) {
 			continue;
@@ -71,6 +82,82 @@ int main() {
 	
 	return 0;
 
+}
+
+// Calculates x component of velocity
+double calculateVX(double v0, double angle) {
+      double vX = v0 * cos(angle);
+      return vX;
+}       
+
+// Calculates y component of velocity
+double calculateVY(double v0, double angle) {
+	double vY = v0 * sin(angle);
+	return vY;
+}
+
+// Converts angle in degrees to angle in rads
+double convertToRads(double angle) {
+	angle = angle * (M_PI / 180.0);
+	return angle;
+}
+
+// Sets the launch angle (calls functions for user preference rads/degrees, converts degrees to rads if necessary, returns angle in rads)
+double setLaunchAngle() {
+
+	double angle;
+	if(useRadians()) {
+		while(true) {
+			std::cout << "Launch Angle(radians) >" << std::flush;
+			if(std::cin >> angle && angle <= INT_MAX) {
+				return angle;
+			}
+			else {
+				clearInputStream();
+				std::cout << "Invalid input" << std::endl;
+			}
+		}
+	}
+	else {
+		while(true) {
+			std::cout << "Launch Angle(degrees) >" << std::flush;
+			if(std::cin >> angle && angle <= INT_MAX) {
+				angle = convertToRads(angle);
+				return angle;	
+			}
+			else {
+				clearInputStream();
+				std::cout << "Invalid input" << std::endl;
+			}
+		}
+	}
+}
+
+// Sets user preference for degrees or rads
+bool useRadians() {
+	
+	int inp;
+
+	while(true){
+
+		std::cout << "Indicate radians (1) or degrees (2) >" << std::flush;
+		if(std::cin >> inp && inp <= INT_MAX && (inp == 1 || inp == 2)) {
+			if(inp == 1) {
+				return true;
+			}
+			else if(inp == 2) {
+				return false;
+			}
+			else {
+				std::cout << "Invalid input" << std::endl;
+			}
+		}
+		else{
+			clearInputStream();
+			std::cout << "Invalid input" << std::endl;
+		}
+
+	}
 }
 
 // Clears the input stream
@@ -114,7 +201,7 @@ bool runAgain() {
 
 	int inp;
 	while(true) {
-		std::cout << "Continue? Enter Yes(1) or No(2)>" << std::flush;
+		std::cout << "Continue? Yes(1) / No(2) >" << std::flush;
 		if(std::cin >> inp && inp <= INT_MAX && (inp == 1 || inp == 2)) {
 			if(inp == 1) {
 				return true;
@@ -135,22 +222,21 @@ bool runAgain() {
 
 
 
-void printResults(double t,double p, double g) {
+void printResults(double t,double height, double displacement, double g) {
 	// Add newline before results
 	std::cout << std::endl;
 
 	// Output total flight time
-	std::cout << "The total flight time is approximately " << std::setprecision(2) << std::fixed << t << " seconds" << std::endl;
-
-	// Output time (in seconds) with two decimal places after period
-	std::cout << "The object reaches its maximum height at approximately " << std::setprecision(2) << std::fixed << t / 2.0 << " seconds" << std::endl;
+	std::cout << "TOTAL FLIGHT TIME: " << std::setprecision(2) << std::fixed << t << " seconds" << std::endl;
 
 	// Output height (in meters) with two decimal places after period
 	if(g == GRAVITY_METRIC) {
-		std::cout << "The maximum height reached by the object is " << std::setprecision(2) << std::fixed << p << " meters" << std::endl;
+		std::cout << "MAXIMUM HEIGHT: " << std::setprecision(2) << std::fixed << height << " meters" << std::endl;
+		std::cout << "DISTANCE: " << std::setprecision(2) << std::fixed << displacement << " meters " << std::endl;
 	}
 	else {
-		std::cout << "The maximum height reached by the object is " << std::setprecision(2) << std::fixed << p << " feet" << std::endl;
+		std::cout << "MAXIMUM HEIGHT: " << std::setprecision(2) << std::fixed << height << " feet" << std::endl;
+		std::cout << "DISTANCE: " << std::setprecision(2) << std::fixed << displacement << " feet" << std::endl;
 	}
 
 	// Add newline after results
@@ -169,12 +255,12 @@ double setInitialVelocity(double g) {
 	double v0 = 0;
 	while(true) {
 
-		std::cout << "Enter initial velocity " << std::flush;
+		std::cout << "Initial Velocity " << std::flush;
 		if(g == GRAVITY_METRIC) {
-			std::cout << "in meters/second>" << std::flush;
+			std::cout << "(meters/second)>" << std::flush;
 		}
 		else if(g == GRAVITY_IMPERIAL) {
-			std::cout << "in feet/second>" << std::flush;
+			std::cout << "(feet/second)>" << std::flush;
 		}
 		if(std::cin >> v0 && v0 <= INT_MAX) {
 			break;
@@ -190,10 +276,18 @@ double setInitialVelocity(double g) {
 
 }
 
-// Position function (determines maximum height that object reaches)
-double maxHeight(double t, double v0, double g) {
-	double p = 0;
-	p = v0*(t / 2.0) + ((g/2.0)*pow((t / 2.0),2.0));
-	return p;
+// Position function (determines displacement of the object)
+double maxHeight(double t, double vY, double g) {
+	double height = 0;
+	height = vY*(t) + ((g/2.0)*pow(t,2.0));
+	return height;
 
 }	
+
+// Displacement functions (determines object's horizontal displacement) 
+double calculateDisplacement(double vX, double t) {
+	double displacement = vX * t;
+	return displacement;
+}
+
+
