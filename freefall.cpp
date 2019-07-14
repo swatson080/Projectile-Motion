@@ -11,7 +11,9 @@
 //
 // TODO:
 // 	- Support unit conversion..
-// 	- Handle empty input
+// 	- Menu System
+// 	- Save user preferences between runs
+// 	- Allow additional values of G
 // 	
 // 	
 
@@ -135,7 +137,6 @@ double getFloatInput(std::string message) {
 		}
 		else {
 			std::cout << "Invalid input" << std::endl;
-			clearInputStream();
 		}
 	}
 }
@@ -156,7 +157,6 @@ int getIntInput(std::string message) {
 		}
 		else {
 			std::cout << "Invalid input" << std::endl;
-			clearInputStream();
 		}
 	}
 }
@@ -164,7 +164,7 @@ int getIntInput(std::string message) {
 // Gets string input
 std::string getStringInput() {
 	std::string input;
-	std::cin >> input;
+	std::getline(std::cin,input);
 	return input;
 }
 
