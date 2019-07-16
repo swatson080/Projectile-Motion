@@ -11,8 +11,6 @@
 //
 // TODO:
 // 	- Support unit conversion..
-// 	- Menu System
-// 	- Save user preferences between runs
 // 	- Allow additional values of G
 // 	
 // 	
@@ -31,8 +29,8 @@ const double GRAVITY_METRIC = -9.80665;
 const double GRAVITY_IMPERIAL = -32.174;
 
 // Initial conditions 
-double setLaunchAngle();
-double setInitialVelocity(double g);
+double setLaunchAngle(bool radians);
+double setInitialVelocity(bool metric);
 // Input functions
 double getFloatInput(std::string message);
 int getIntInput(std::string message); 
@@ -48,56 +46,50 @@ bool runAgain();
 bool useMetric();
 bool useRadians();
 // Utility functions
+void runSimulation(double g, bool metric, bool radians);
+int menuChoice();
 double convertToRads(double angle);
 void clearInputStream();
-void printResults(double t, double height, double displacement, double g);
+void printResults(double t, double height, double displacement, bool metric, bool radians, double v0, double angle);
 
 int main() {
 
-	while(true) {
+	bool exit = false;
+	bool metric = true; // Defaults to metric 
+	bool radians = false; // Defaults to degrees
+	double g;
 
-		double g = GRAVITY_IMPERIAL;
-		// Set units (metric/imperial) 
-		if(useMetric()) {
+	do {
+		if(metric) {
 			g = GRAVITY_METRIC;
 		}
-
-		// Launch angle
-		double angle = setLaunchAngle();
-		// Initial velocity
-		double v0 = setInitialVelocity(g);
-		double vX = calculateVX(v0,angle);
-		double vY = calculateVY(v0,angle);
-		
-		// Calculate total flight time 
-		double t = calculateTime(vY,g);
-
-		// Calculate object's maximum height
-		double height = maxHeight(0.5 * t,vY,g);
-
-		// Calculate object's horizontal flight distance 
-		double displacement = calculateDisplacement(vX,t);
-
-		// Output the results
-		printResults(t,height,displacement,g);
-
-		if(runAgain()) {
-			continue;
-		}
 		else {
-			break;
+			g = GRAVITY_IMPERIAL;
 		}
-	}
+
+		int selection = menuChoice();
+		switch(selection) {
+			case 1: 
+				runSimulation(g, metric, radians);
+				break;
+			case 2:
+				metric = useMetric();
+				radians = useRadians();
+				break;
+			case 3:
+				exit = true;
+				break;
+		}
+	} while(!exit);
 	
 	return 0;
-
 }
 
-// Sets the launch angle (calls functions for user preference rads/degrees, converts degrees to rads if necessary, returns angle in rads)
-double setLaunchAngle() {
+// Sets the launch angle (returns angle in rads)
+double setLaunchAngle(bool radians) {
 
 	double angle;
-	if(useRadians()) {
+	if(radians) {
 		angle = getFloatInput("Input Launch Angle (radians) >");
 		return angle;
 	}
@@ -109,9 +101,9 @@ double setLaunchAngle() {
 }
 
 // Set initial velocity and test input
-double setInitialVelocity(double g) {
+double setInitialVelocity(bool metric) {
 	double v0;
-	if(g == GRAVITY_METRIC) {
+	if(metric) {
 		v0 = getFloatInput("Enter initial velocity (meters/second)>");
 		return v0;
 	}
@@ -194,7 +186,7 @@ double maxHeight(double t, double vY, double g) {
 
 }	
 
-// Displacement functions (determines object's horizontal displacement) 
+// Displacement function (determines object's horizontal displacement) 
 double calculateDisplacement(double vX, double t) {
 	double displacement = vX * t;
 	return displacement;
@@ -249,9 +241,66 @@ bool useRadians() {
 	}
 }
 
+// Loop for running projectile motion simulations
+void runSimulation(double g, bool metric, bool radians) {
+	while(true) {
+
+		// Launch angle
+		double angle = setLaunchAngle(radians);
+		// Initial velocity
+		double v0 = setInitialVelocity(g);
+		double vX = calculateVX(v0,angle);
+		double vY = calculateVY(v0,angle);
+		
+		// Calculate total flight time 
+		double t = calculateTime(vY,g);
+
+		// Calculate object's maximum height
+		double height = maxHeight(0.5 * t,vY,g);
+
+		// Calculate object's horizontal flight distance 
+		double displacement = calculateDisplacement(vX,t);
+
+		// Output the results
+		printResults(t,height,displacement,metric,radians,v0,angle);
+
+		if(runAgain()) {
+			continue;
+		}
+		else {
+			break;
+		}
+	}
+}
+
+// Gets users choice for next action
+int menuChoice() {
+	std::string menuMessage = "\nMake a selection\n1. Run simulations\n2. Set unit preferences\n3. Exit\n>";
+	while(true) {
+		int selection = getIntInput(menuMessage);
+		switch(selection) {
+			case 1: 
+				return selection;
+			case 2:
+				return selection;
+			case 3:
+				return selection;
+			default:
+				std::cout << "Invalid Input" << std::endl;
+		}
+	}
+}
+
+
 // Converts angle in degrees to angle in rads
 double convertToRads(double angle) {
 	angle = angle * (M_PI / 180.0);
+	return angle;
+}
+
+// Converts angle in rads to angle in degrees
+double convertToDegrees(double angle) {
+	angle = angle * (180.0 / M_PI);
 	return angle;
 }
 
@@ -262,22 +311,38 @@ void clearInputStream() {
 }
 
 // Outputs results
-void printResults(double t,double height, double displacement, double g) {
+void printResults(double t,double height, double displacement, bool metric, bool radians, double v0, double angle) {
 	// Add newline before results
 	std::cout << std::endl;
 
+	// Output initial conditions
+	std::cout << "INITIAL VELOCITY: " << v0;
+	if(metric) {
+		std::cout << " meters/second | " << std::flush;
+	}
+	else {
+		std::cout << " feet/second | " << std::flush;
+	}
+	std::cout << "LAUNCH ANGLE: ";
+	if(radians) {
+		std::cout << angle << " radians" << std::endl;
+	}
+	else {
+		std::cout << convertToDegrees(angle) << " degrees" << std::endl;
+	}
+	
 	// Output total flight time
 	std::cout << "TOTAL FLIGHT TIME: " << std::setprecision(2) << std::fixed << t << " seconds" << std::endl;
 
 	// Output height (in meters) with two decimal places after period
-	if(g == GRAVITY_METRIC) {
-		std::cout << "MAXIMUM HEIGHT: " << std::setprecision(2) << std::fixed << height << " meters" << std::endl;
+	if(metric) {
 		std::cout << "DISTANCE: " << std::setprecision(2) << std::fixed << displacement << " meters " << std::endl;
-	}
+		std::cout << "MAXIMUM HEIGHT: " << std::setprecision(2) << std::fixed << height << " meters" << std::endl;
+		}
 	else {
-		std::cout << "MAXIMUM HEIGHT: " << std::setprecision(2) << std::fixed << height << " feet" << std::endl;
 		std::cout << "DISTANCE: " << std::setprecision(2) << std::fixed << displacement << " feet" << std::endl;
-	}
+		std::cout << "MAXIMUM HEIGHT: " << std::setprecision(2) << std::fixed << height << " feet" << std::endl;
+		}
 
 	// Add newline after results
 	std::cout << std::endl;
