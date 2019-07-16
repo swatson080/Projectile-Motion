@@ -248,7 +248,7 @@ void runSimulation(double g, bool metric, bool radians) {
 		// Launch angle
 		double angle = setLaunchAngle(radians);
 		// Initial velocity
-		double v0 = setInitialVelocity(g);
+		double v0 = setInitialVelocity(metric);
 		double vX = calculateVX(v0,angle);
 		double vY = calculateVY(v0,angle);
 		
