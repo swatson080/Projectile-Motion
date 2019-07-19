@@ -11,8 +11,6 @@
 //
 // TODO:
 // 	- Support unit conversion..
-// 	- Allow additional values of G
-// 	
 // 	
 
 #include <iostream>
@@ -23,14 +21,26 @@
 #include <climits>
 #include <cmath>
 
+// Number of celestial bodies
+const int NUM_LOCATIONS = 10;
+// Gravitation constants for solar system bodies (metric)
+const double GRAVITY_METRIC[NUM_LOCATIONS] = { -3.70, -8.87, -9.80665, -1.62, -3.71, -24.79, -10.44, -8.69, -11.15, -0.66 };
+// Gravitation constants for solar system bodies (imperial)
+const double GRAVITY_IMPERIAL[NUM_LOCATIONS] = { -12.1391, -29.10, -32.174, -5.31496, -12.1719, -81.332, -34.252, -28.5105, -36.5814, -2.1654 };
+// Names of solar system bodies
+const std::string PLANETS[10] = { "Mercury", "Venus", "Earth", "The moon", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto" };
+// Planet enum
+enum planets{mercury, venus, earth, moon, mars, jupiter, saturn, uranus, neptune, pluto};
+
 // Gravitational constant (metric)
-const double GRAVITY_METRIC = -9.80665;
+//const double GRAVITY_METRIC = -9.80665;
 // Gravitation constant (imperial)
-const double GRAVITY_IMPERIAL = -32.174;
+//const double GRAVITY_IMPERIAL = -32.174;
 
 // Initial conditions 
 double setLaunchAngle(bool radians);
 double setInitialVelocity(bool metric);
+double setGravity(bool metric, int currentPlanet);
 // Input functions
 double getFloatInput(std::string message);
 int getIntInput(std::string message); 
@@ -45,11 +55,13 @@ double calculateDisplacement(double vX, double t);
 bool runAgain();
 bool useMetric();
 bool useRadians();
+int setPlanet();
 // Utility functions
 void runSimulation(double g, bool metric, bool radians);
 int menuChoice();
 double convertToRads(double angle);
 void clearInputStream();
+void printInfo(int currentPlanet, double g, bool metric, bool radians);
 void printResults(double t, double height, double displacement, bool metric, bool radians, double v0, double angle);
 
 int main() {
@@ -58,15 +70,10 @@ int main() {
 	bool metric = true; // Defaults to metric 
 	bool radians = false; // Defaults to degrees
 	double g;
+	int currentPlanet = earth; 
 
 	do {
-		if(metric) {
-			g = GRAVITY_METRIC;
-		}
-		else {
-			g = GRAVITY_IMPERIAL;
-		}
-
+		g = setGravity(metric,currentPlanet);
 		int selection = menuChoice();
 		switch(selection) {
 			case 1: 
@@ -77,12 +84,30 @@ int main() {
 				radians = useRadians();
 				break;
 			case 3:
+				currentPlanet = setPlanet();
+				break;
+			case 4:
+				printInfo(currentPlanet,g,metric,radians);
+				break;
+			case 5:
 				exit = true;
 				break;
 		}
 	} while(!exit);
 	
 	return 0;
+}
+
+// Sets gravity value based on metric/imperial and current planet
+double setGravity(bool metric, int currentPlanet) {
+	double g;
+	if(metric) {
+		g = GRAVITY_METRIC[currentPlanet];
+	}
+	else {
+		g = GRAVITY_IMPERIAL[currentPlanet];
+	}
+	return g;
 }
 
 // Sets the launch angle (returns angle in rads)
@@ -241,6 +266,33 @@ bool useRadians() {
 	}
 }
 
+// Sets the users location
+int setPlanet() {
+	int currentPlanet;
+	// Build message for planet menu
+	std::string planetMessage = "\nSelect the planet you would like to run simulations for\n"; 
+	for(int i = 0; i < 10; i++) {
+		std::stringstream stream;
+		std::string num;
+		stream << i+1;
+		num = stream.str();
+		planetMessage += num + ". " + PLANETS[i] + "\n";
+	}
+	planetMessage += ">";
+	// Get user input for planet selection
+	while(true) {	
+		int currentPlanet = getIntInput(planetMessage);
+		if(currentPlanet >= 1 && currentPlanet <= 10) {
+			return currentPlanet - 1;
+		}
+		else {
+			std::cout << "Invalid input" << std::endl;
+			continue;
+		}
+	}
+
+}
+
 // Loop for running projectile motion simulations
 void runSimulation(double g, bool metric, bool radians) {
 	while(true) {
@@ -275,18 +327,14 @@ void runSimulation(double g, bool metric, bool radians) {
 
 // Gets users choice for next action
 int menuChoice() {
-	std::string menuMessage = "\nMake a selection\n1. Run simulations\n2. Set unit preferences\n3. Exit\n>";
+	std::string menuMessage = "\nMain Menu\n1. Simulations\n2. Units\n3. Location\n4. Current Settings\n5. Exit\n>";
 	while(true) {
 		int selection = getIntInput(menuMessage);
-		switch(selection) {
-			case 1: 
-				return selection;
-			case 2:
-				return selection;
-			case 3:
-				return selection;
-			default:
-				std::cout << "Invalid Input" << std::endl;
+		if(selection > 0 && selection < 6) {
+			return selection;
+		}
+		else {
+			std::cout << "Invalid Input" << std::endl;
 		}
 	}
 }
@@ -308,6 +356,24 @@ double convertToDegrees(double angle) {
 void clearInputStream() {
 	std::cin.clear();
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+}
+
+// Prints the Current Planet, the value of gravity, and measurement settings (metric/imperial and degrees/radians)
+void printInfo(int currentPlanet, double g, bool metric, bool radians) {
+	std::cout << "\nLOCATION: " << PLANETS[currentPlanet] << std::endl;
+	std::cout << "GRAVITY: " << g << std::endl;
+	if(metric) {
+		std::cout << "UNITS: METRIC" << std::flush;
+	}
+	else {
+		std::cout << "UNITS: IMPERIAL" << std::flush;
+	}
+	if(radians) {
+		std::cout << ", RADIANS\n" << std::endl;
+	}
+	else {
+		std::cout << ", DEGREES\n" << std::endl;
+	}
 }
 
 // Outputs results
