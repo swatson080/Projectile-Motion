@@ -8,10 +8,6 @@
 // 	- No air resistance
 // 	- Object lands at the same height from which it was launched
 //
-//
-// TODO:
-// 	- Support unit conversion..
-// 	
 
 #include <iostream>
 #include <sstream>
@@ -28,7 +24,7 @@ const double GRAVITY_METRIC[NUM_LOCATIONS] = { -3.70, -8.87, -9.80665, -1.62, -3
 // Gravitation constants for solar system bodies (imperial)
 const double GRAVITY_IMPERIAL[NUM_LOCATIONS] = { -12.1391, -29.10, -32.174, -5.31496, -12.1719, -81.332, -34.252, -28.5105, -36.5814, -2.1654 };
 // Names of solar system bodies
-const std::string PLANETS[10] = { "Mercury", "Venus", "Earth", "The moon", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto" };
+const std::string PLANETS[NUM_LOCATIONS] = { "Mercury", "Venus", "Earth", "The moon", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto" };
 // Planet enum
 enum planets{mercury, venus, earth, moon, mars, jupiter, saturn, uranus, neptune, pluto};
 
