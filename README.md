@@ -1,17 +1,4 @@
 # freefall
-Code to solve simple freefall problems.
-
-Initial commit 7/1/2019
-
-  - Calculates the maximum height (in meters/second or feet/second) that the object reaches
-  - Calculates distance flown
-  - Calculates total flight time
-  
- Update 7/5/2019
-  - User can now select which units they would like to use (metric,imperial)
-  - User can perform as many calculations as they like in a single run
-  Issues:
-    - All inputs are integers - tried with strings, but the program did not flow smoothly
-  
-Eventually, I'd like to add more functionality to this, including:
-  - Change the gravitational constant
+Solves 2D projectile motion problems, given the intial velocity and launch angle.
+  - Choose between metric or imperial units, as well as radians or degrees.
+  - By default it uses Earth's gravity constant, but you can choose to use gravity of other planets from the solar system, as well as our moon.
